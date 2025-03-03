@@ -1,0 +1,33 @@
+import streamlit as st
+import pandas as pd
+
+# Cargar los datos procesados
+@st.cache_data
+def load_data():
+    file_path = "/mnt/data/BASE IA.xlsx"
+    xls = pd.ExcelFile(file_path)
+    df = xls.parse('Feuil1')
+    return df
+
+df = load_data()
+
+# Título de la aplicación
+st.title("Análisis de Problemas y Piezas Utilizadas")
+
+# Selección de modelo de aparato
+modelo_seleccionado = st.selectbox("Selecciona un modelo de aparato", df["modele"].unique())
+
+# Filtrar problemas del modelo seleccionado
+problemas_modelo = df[df["modele"] == modelo_seleccionado]
+problema_seleccionado = st.selectbox("Selecciona un problema", problemas_modelo["probleme"].unique())
+
+# Filtrar piezas asociadas al problema seleccionado
+piezas_problema = df[(df["modele"] == modelo_seleccionado) & (df["probleme"] == problema_seleccionado)]
+
+if not piezas_problema.empty:
+    st.subheader("Piezas más utilizadas para este problema:")
+    piezas_frecuencia = piezas_problema["item.label"].value_counts().reset_index()
+    piezas_frecuencia.columns = ["Pieza", "Veces Utilizada"]
+    st.table(piezas_frecuencia)
+else:
+    st.write("No se encontraron registros de piezas para este problema.")
